@@ -1,0 +1,16 @@
+services:
+  postgres:
+    image: postgres:17-alpine
+    container_name: rahasia-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: rahasia
+      POSTGRES_USER: rahasia
+      POSTGRES_PASSWORD: rahasia
+    ports:
+      - "5433:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+volumes:
+  postgres_data:

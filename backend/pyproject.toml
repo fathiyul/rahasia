@@ -5,7 +5,9 @@ description = "FastAPI backend for the Rahasia encrypted sharing app"
 requires-python = ">=3.13"
 dependencies = [
     "fastapi>=0.136.0",
+    "psycopg[binary]>=3.3.3",
     "pydantic-settings>=2.13.1",
+    "sqlalchemy>=2.0.49",
     "uvicorn[standard]>=0.44.0",
 ]
 
