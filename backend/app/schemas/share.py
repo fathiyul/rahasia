@@ -1,3 +1,4 @@
+from datetime import datetime
 from typing import Literal
 
 from pydantic import BaseModel, Field
@@ -15,3 +16,14 @@ class CreateShareRequest(BaseModel):
 
 class CreateShareResponse(BaseModel):
     id: str
+
+
+class GetShareResponse(BaseModel):
+    id: str
+    type: Literal["text", "file"]
+    encrypted_payload: str
+    file_name: str | None
+    file_size: int | None
+    mime_type: str | None
+    burn_after_read: bool
+    expires_at: datetime

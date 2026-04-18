@@ -1,6 +1,8 @@
 from datetime import UTC, datetime, timedelta
 from uuid import uuid4
 
+from fastapi import HTTPException, status
+from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from app.models.share import Share
@@ -24,5 +26,29 @@ def create_share(db: Session, payload: CreateShareRequest) -> Share:
     db.add(share)
     db.commit()
     db.refresh(share)
+
+    return share
+
+
+def get_share_by_id(db: Session, share_id: str) -> Share:
+    statement = select(Share).where(Share.id == share_id)
+    share = db.execute(statement).scalar_one_or_none()
+
+    if share is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="Share not found"
+        )
+
+    now = datetime.now(UTC)
+
+    if share.expires_at <= now:
+        raise HTTPException(
+            status_code=status.HTTP_410_GONE, detail="Share has expired"
+        )
+
+    if share.is_deleted:
+        raise HTTPException(
+            status_code=status.HTTP_410_GONE, detail="Share is no longer available"
+        )
 
     return share
