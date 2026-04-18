@@ -74,7 +74,10 @@ export function ShareForm({ isSubmitting, onSubmit }: ShareFormProps) {
         Burn after read
       </label>
 
-      <button type="submit" disabled={isSubmitting || content.trim().length === 0}>
+      <button
+        type="submit"
+        disabled={isSubmitting || content.trim().length === 0}
+      >
         {isSubmitting ? 'Encrypting and creating...' : 'Create share'}
       </button>
     </form>

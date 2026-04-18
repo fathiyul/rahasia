@@ -49,9 +49,7 @@ export function ShareResult({ shareId, shareKey }: ShareResultProps) {
         </div>
       </div>
 
-      <p className="hint">
-        Send the link and the decryption key separately.
-      </p>
+      <p className="hint">Send the link and the decryption key separately.</p>
     </section>
   )
 }
