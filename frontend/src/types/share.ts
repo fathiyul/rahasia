@@ -13,3 +13,14 @@ export type CreateSharePayload = {
 export type CreateShareResponse = {
   id: string
 }
+
+export type GetShareResponse = {                                          
+  id: string                                                              
+  type: ShareType                                                         
+  encrypted_payload: string                                               
+  file_name: string | null                                                
+  file_size: number | null                                                
+  mime_type: string | null                                                
+  burn_after_read: boolean                                                
+  expires_at: string                                                      
+}

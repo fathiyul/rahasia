@@ -102,3 +102,8 @@ button:disabled {
 code {                                                                    
   font-family: 'Courier New', monospace;                                  
 }
+
+textarea[readonly],                                                       
+input[readonly] {                                                         
+  color: #2a241b;                                                         
+}
