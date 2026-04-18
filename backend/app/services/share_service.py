@@ -9,6 +9,12 @@ from app.models.share import Share
 from app.schemas.share import CreateShareRequest
 
 
+def _as_utc(value: datetime) -> datetime:
+    if value.tzinfo is None:
+        return value.replace(tzinfo=UTC)
+    return value.astimezone(UTC)
+
+
 def create_share(db: Session, payload: CreateShareRequest) -> Share:
     expires_at = datetime.now(UTC) + timedelta(seconds=payload.expires_in)
 
@@ -40,8 +46,9 @@ def get_share_by_id(db: Session, share_id: str) -> Share:
         )
 
     now = datetime.now(UTC)
+    expires_at = _as_utc(share.expires_at)
 
-    if share.expires_at <= now:
+    if expires_at <= now:
         raise HTTPException(
             status_code=status.HTTP_410_GONE, detail="Share has expired"
         )
