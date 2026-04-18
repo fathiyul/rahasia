@@ -1,8 +1,9 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
 
 import { getShare } from '../lib/api/shares'
-import { decryptText, parseEncryptedTextPayload } from '../lib/crypto/text'
+import { decryptFile } from '../lib/crypto/file'
+import { decryptText, parseEncryptedPayload } from '../lib/crypto/text'
 import type { GetShareResponse } from '../types/share'
 
 function getLoadErrorMessage(
@@ -34,10 +35,19 @@ export function ViewSharePage() {
   const [error, setError] = useState<string | null>(null)
   const [decryptionKey, setDecryptionKey] = useState('')
   const [decryptedContent, setDecryptedContent] = useState<string | null>(null)
+  const [downloadUrl, setDownloadUrl] = useState<string | null>(null)
   const [decryptError, setDecryptError] = useState<string | null>(null)
   const [isDecrypting, setIsDecrypting] = useState(false)
   const missingShareId = !shareId
   const loadErrorMessage = getLoadErrorMessage(error, missingShareId)
+
+  useEffect(() => {
+    return () => {
+      if (downloadUrl) {
+        URL.revokeObjectURL(downloadUrl)
+      }
+    }
+  }, [downloadUrl])
 
   async function handleDecrypt(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault()
@@ -51,19 +61,32 @@ export function ViewSharePage() {
     setError(null)
     setDecryptError(null)
     setDecryptedContent(null)
+
+    if (downloadUrl) {
+      URL.revokeObjectURL(downloadUrl)
+      setDownloadUrl(null)
+    }
+
     setIsDecrypting(true)
 
     try {
       const response = await getShare(currentShareId)
       setShare(response)
 
-      if (response.type !== 'text') {
-        throw new Error('Only text shares are supported in this step.')
-      }
+      const payload = parseEncryptedPayload(response.encrypted_payload)
 
-      const payload = parseEncryptedTextPayload(response.encrypted_payload)
-      const plaintext = await decryptText(payload, decryptionKey.trim())
-      setDecryptedContent(plaintext)
+      if (response.type === 'text') {
+        const plaintext = await decryptText(payload, decryptionKey.trim())
+        setDecryptedContent(plaintext)
+      } else {
+        const blob = await decryptFile(
+          payload,
+          decryptionKey.trim(),
+          response.mime_type,
+        )
+        const nextDownloadUrl = URL.createObjectURL(blob)
+        setDownloadUrl(nextDownloadUrl)
+      }
     } catch (err) {
       const message =
         err instanceof Error ? err.message : 'Failed to decrypt share'
@@ -145,6 +168,27 @@ export function ViewSharePage() {
                 <label>Burn after read</label>
                 <input value={share.burn_after_read ? 'Yes' : 'No'} readOnly />
               </div>
+
+              {share.file_name ? (
+                <div className="field">
+                  <label>File name</label>
+                  <input value={share.file_name} readOnly />
+                </div>
+              ) : null}
+
+              {share.file_size !== null ? (
+                <div className="field">
+                  <label>File size</label>
+                  <input value={`${share.file_size} bytes`} readOnly />
+                </div>
+              ) : null}
+
+              {share.mime_type ? (
+                <div className="field">
+                  <label>MIME type</label>
+                  <input value={share.mime_type} readOnly />
+                </div>
+              ) : null}
             </section>
           ) : null}
 
@@ -155,6 +199,22 @@ export function ViewSharePage() {
                 <label>Plaintext</label>
                 <textarea value={decryptedContent} rows={10} readOnly />
               </div>
+            </section>
+          ) : null}
+
+          {downloadUrl && share?.type === 'file' ? (
+            <section className="card stack">
+              <h2>Decrypted file</h2>
+              <p className="hint">
+                Your file is ready to download locally after decryption.
+              </p>
+              <a
+                className="button-link"
+                href={downloadUrl}
+                download={share.file_name ?? 'secret-file'}
+              >
+                Download decrypted file
+              </a>
             </section>
           ) : null}
         </>

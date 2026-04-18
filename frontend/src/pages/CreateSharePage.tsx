@@ -3,7 +3,8 @@ import { useState } from 'react'
 import { ShareForm } from '../components/ShareForm'
 import { ShareResult } from '../components/ShareResult'
 import { createShare } from '../lib/api/shares'
-import { encryptText, serializeEncryptedTextPayload } from '../lib/crypto/text'
+import { encryptFile } from '../lib/crypto/file'
+import { encryptText, serializeEncryptedPayload } from '../lib/crypto/text'
 import type { CreateShareFormValues, CreateSharePayload } from '../types/share'
 
 export function CreateSharePage() {
@@ -19,15 +20,40 @@ export function CreateSharePage() {
     setCreatedShareKey(null)
 
     try {
-      const { encryptedPayload, decryptionKey } = await encryptText(
-        values.content,
-      )
+      let payload: CreateSharePayload
+      let decryptionKey: string
 
-      const payload: CreateSharePayload = {
-        type: values.type,
-        encrypted_payload: serializeEncryptedTextPayload(encryptedPayload),
-        expires_in: values.expires_in,
-        burn_after_read: values.burn_after_read,
+      if (values.type === 'text') {
+        const encryptedResult = await encryptText(values.content)
+        decryptionKey = encryptedResult.decryptionKey
+
+        payload = {
+          type: 'text',
+          encrypted_payload: serializeEncryptedPayload(
+            encryptedResult.encryptedPayload,
+          ),
+          expires_in: values.expires_in,
+          burn_after_read: values.burn_after_read,
+        }
+      } else {
+        if (!values.file) {
+          throw new Error('Choose a file to share.')
+        }
+
+        const encryptedResult = await encryptFile(values.file)
+        decryptionKey = encryptedResult.decryptionKey
+
+        payload = {
+          type: 'file',
+          encrypted_payload: serializeEncryptedPayload(
+            encryptedResult.encryptedPayload,
+          ),
+          file_name: encryptedResult.fileName,
+          file_size: encryptedResult.fileSize,
+          mime_type: encryptedResult.mimeType,
+          expires_in: values.expires_in,
+          burn_after_read: values.burn_after_read,
+        }
       }
 
       const response = await createShare(payload)
@@ -46,8 +72,8 @@ export function CreateSharePage() {
         <p className="eyebrow">Rahasia</p>
         <h1>Create a share</h1>
         <p className="hint">
-          Your text will be encrypted in the browser before it is sent to the
-          backend.
+          Your text or file is encrypted in the browser before it is sent to
+          the backend.
         </p>
       </header>
 

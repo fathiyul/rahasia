@@ -3,11 +3,12 @@ export type ShareType = 'text' | 'file'
 export type CreateShareFormValues = {
   type: ShareType
   content: string
+  file: File | null
   expires_in: number
   burn_after_read: boolean
 }
 
-export type EncryptedTextPayload = {
+export type EncryptedPayload = {
   iv: string
   ciphertext: string
 }

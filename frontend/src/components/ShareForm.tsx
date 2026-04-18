@@ -10,6 +10,7 @@ type ShareFormProps = {
 export function ShareForm({ isSubmitting, onSubmit }: ShareFormProps) {
   const [type, setType] = useState<ShareType>('text')
   const [content, setContent] = useState('')
+  const [selectedFile, setSelectedFile] = useState<File | null>(null)
   const [expiresIn, setExpiresIn] = useState('3600')
   const [burnAfterRead, setBurnAfterRead] = useState(false)
 
@@ -19,10 +20,14 @@ export function ShareForm({ isSubmitting, onSubmit }: ShareFormProps) {
     await onSubmit({
       type,
       content,
+      file: selectedFile,
       expires_in: Number(expiresIn),
       burn_after_read: burnAfterRead,
     })
   }
+
+  const isSubmitDisabled =
+    isSubmitting || (type === 'text' ? content.trim().length === 0 : selectedFile === null)
 
   return (
     <form className="card stack" onSubmit={handleSubmit}>
@@ -34,23 +39,36 @@ export function ShareForm({ isSubmitting, onSubmit }: ShareFormProps) {
           onChange={(event) => setType(event.target.value as ShareType)}
         >
           <option value="text">Text</option>
-          <option value="file" disabled>
-            File (later step)
-          </option>
+          <option value="file">File</option>
         </select>
       </div>
 
-      <div className="field">
-        <label htmlFor="share-content">Secret content</label>
-        <textarea
-          id="share-content"
-          value={content}
-          onChange={(event) => setContent(event.target.value)}
-          placeholder="This text will be encrypted in your browser before upload."
-          rows={8}
-          required
-        />
-      </div>
+      {type === 'text' ? (
+        <div className="field">
+          <label htmlFor="share-content">Secret content</label>
+          <textarea
+            id="share-content"
+            value={content}
+            onChange={(event) => setContent(event.target.value)}
+            placeholder="This text will be encrypted in your browser before upload."
+            rows={8}
+            required
+          />
+        </div>
+      ) : (
+        <div className="field">
+          <label htmlFor="share-file">File</label>
+          <input
+            id="share-file"
+            type="file"
+            onChange={(event) => setSelectedFile(event.target.files?.[0] ?? null)}
+            required
+          />
+          <p className="hint">
+            The file is encrypted in your browser before upload.
+          </p>
+        </div>
+      )}
 
       <div className="field">
         <label htmlFor="expires-in">Expires in</label>
@@ -74,10 +92,7 @@ export function ShareForm({ isSubmitting, onSubmit }: ShareFormProps) {
         Burn after read
       </label>
 
-      <button
-        type="submit"
-        disabled={isSubmitting || content.trim().length === 0}
-      >
+      <button type="submit" disabled={isSubmitDisabled}>
         {isSubmitting ? 'Encrypting and creating...' : 'Create share'}
       </button>
     </form>

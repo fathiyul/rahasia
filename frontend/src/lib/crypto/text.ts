@@ -1,9 +1,9 @@
-import type { EncryptedTextPayload } from '../../types/share'
+import type { EncryptedPayload } from '../../types/share'
 
 const encoder = new TextEncoder()
 const decoder = new TextDecoder()
 
-function bytesToBase64Url(bytes: Uint8Array): string {
+export function bytesToBase64Url(bytes: Uint8Array): string {
   let binary = ''
 
   bytes.forEach((byte) => {
@@ -16,7 +16,7 @@ function bytesToBase64Url(bytes: Uint8Array): string {
     .replace(/=+$/g, '')
 }
 
-function base64UrlToBytes(value: string): Uint8Array {
+export function base64UrlToBytes(value: string): Uint8Array {
   const normalized = value.replace(/-/g, '+').replace(/_/g, '/')
   const padding = '='.repeat((4 - (normalized.length % 4 || 4)) % 4)
   const binary = atob(`${normalized}${padding}`)
@@ -24,18 +24,16 @@ function base64UrlToBytes(value: string): Uint8Array {
   return Uint8Array.from(binary, (char) => char.charCodeAt(0))
 }
 
-function toArrayBuffer(bytes: Uint8Array): ArrayBuffer {
+export function toArrayBuffer(bytes: Uint8Array): ArrayBuffer {
   return Uint8Array.from(bytes).buffer as ArrayBuffer
 }
 
-export function serializeEncryptedTextPayload(
-  payload: EncryptedTextPayload,
-): string {
+export function serializeEncryptedPayload(payload: EncryptedPayload): string {
   return JSON.stringify(payload)
 }
 
-export function parseEncryptedTextPayload(value: string): EncryptedTextPayload {
-  const parsed = JSON.parse(value) as Partial<EncryptedTextPayload>
+export function parseEncryptedPayload(value: string): EncryptedPayload {
+  const parsed = JSON.parse(value) as Partial<EncryptedPayload>
 
   if (typeof parsed.iv !== 'string' || typeof parsed.ciphertext !== 'string') {
     throw new Error('Invalid encrypted payload format')
@@ -47,8 +45,8 @@ export function parseEncryptedTextPayload(value: string): EncryptedTextPayload {
   }
 }
 
-export async function encryptText(plaintext: string): Promise<{
-  encryptedPayload: EncryptedTextPayload
+export async function encryptBytes(bytes: Uint8Array): Promise<{
+  encryptedPayload: EncryptedPayload
   decryptionKey: string
 }> {
   const key = await crypto.subtle.generateKey(
@@ -61,7 +59,6 @@ export async function encryptText(plaintext: string): Promise<{
   )
 
   const iv = crypto.getRandomValues(new Uint8Array(12))
-  const encodedPlaintext = encoder.encode(plaintext)
 
   const encrypted = await crypto.subtle.encrypt(
     {
@@ -69,7 +66,7 @@ export async function encryptText(plaintext: string): Promise<{
       iv,
     },
     key,
-    encodedPlaintext,
+    toArrayBuffer(bytes),
   )
 
   const rawKey = new Uint8Array(await crypto.subtle.exportKey('raw', key))
@@ -83,10 +80,10 @@ export async function encryptText(plaintext: string): Promise<{
   }
 }
 
-export async function decryptText(
-  payload: EncryptedTextPayload,
+export async function decryptBytes(
+  payload: EncryptedPayload,
   decryptionKey: string,
-): Promise<string> {
+): Promise<Uint8Array> {
   try {
     const keyBytes = base64UrlToBytes(decryptionKey)
     const key = await crypto.subtle.importKey(
@@ -108,8 +105,23 @@ export async function decryptText(
       toArrayBuffer(base64UrlToBytes(payload.ciphertext)),
     )
 
-    return decoder.decode(decrypted)
+    return new Uint8Array(decrypted)
   } catch {
     throw new Error('Failed to decrypt share. Check the decryption key.')
   }
+}
+
+export async function encryptText(plaintext: string): Promise<{
+  encryptedPayload: EncryptedPayload
+  decryptionKey: string
+}> {
+  return encryptBytes(encoder.encode(plaintext))
+}
+
+export async function decryptText(
+  payload: EncryptedPayload,
+  decryptionKey: string,
+): Promise<string> {
+  const decrypted = await decryptBytes(payload, decryptionKey)
+  return decoder.decode(decrypted)
 }
