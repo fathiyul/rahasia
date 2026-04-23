@@ -103,6 +103,12 @@ See:
 
 - `docs/public/LOCAL_SETUP.md`
 
+## Development Workflow
+
+See:
+
+- `docs/public/DEVELOPMENT_WORKFLOW.md`
+
 ## Deployment Notes
 
 See:
