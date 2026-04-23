@@ -28,10 +28,76 @@ Current implemented scope:
 
 - `frontend/` frontend application
 - `backend/` backend application
-- `infra/` local infrastructure and deployment-related files
+- `docker-compose.yml` local PostgreSQL service for development
 - `docs/public/` public setup and deployment documentation
 
-## Local Development
+## Run the App
+
+### Prerequisites
+
+- Node.js 20+
+- npm
+- Python 3.13
+- `uv`
+- Docker with Compose support
+
+### 1. Start PostgreSQL
+
+From the repo root:
+
+```bash
+docker compose up -d
+```
+
+PostgreSQL will be available on `localhost:5433`.
+
+### 2. Configure and start the backend
+
+From `backend/`:
+
+```bash
+cp .env.example .env
+uv sync
+uv run alembic upgrade head
+uv run uvicorn app.main:app --reload
+```
+
+The backend runs at `http://127.0.0.1:8000`.
+
+Health check:
+
+```bash
+curl http://127.0.0.1:8000/health
+```
+
+### 3. Install and start the frontend
+
+From `frontend/`:
+
+```bash
+npm install
+npm run dev
+```
+
+The frontend runs at `http://127.0.0.1:5173`.
+
+### 4. Run tests
+
+Backend:
+
+```bash
+cd backend
+uv run pytest
+```
+
+Frontend:
+
+```bash
+cd frontend
+npm run test
+```
+
+## Local Development Docs
 
 See:
 
