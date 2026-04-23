@@ -1,5 +1,4 @@
 .codex
-docs-dev/
 .env
 .env.*
 !.env.example
