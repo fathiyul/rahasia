@@ -89,7 +89,9 @@ import re
 
 USERNAME_MIN_LENGTH = 3
 USERNAME_MAX_LENGTH = 30
-USERNAME_PATTERN = re.compile(r"^[a-z0-9._]{3,30}$")
+USERNAME_PATTERN = re.compile(
+    rf"^[a-z0-9._]{{{USERNAME_MIN_LENGTH},{USERNAME_MAX_LENGTH}}}$"
+)
 
 
 def normalize_username(value: str) -> str:
