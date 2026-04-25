@@ -14,6 +14,12 @@
 - `backend/` FastAPI backend
 - `docker-compose.yml` local Postgres
 
+## Phase 2 Config Note
+
+For the upcoming Phase 2 auth and deployment-related config surface, see:
+
+- `docs/public/PHASE_2_CONFIG.md`
+
 ## 1. Start PostgreSQL
 
 From the repo root:

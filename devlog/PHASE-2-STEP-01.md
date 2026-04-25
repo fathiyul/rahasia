@@ -247,11 +247,3 @@ Then commit:
 ```bash
 git commit -m "docs: add phase 2 planning docs"
 ```
-
----
-
-## Commit Message
-
-```text
-docs: add phase 2 planning docs
-```

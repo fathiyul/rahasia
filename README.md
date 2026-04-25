@@ -102,6 +102,7 @@ npm run test
 See:
 
 - `docs/public/LOCAL_SETUP.md`
+- `docs/public/PHASE_2_CONFIG.md`
 
 ## Development Workflow
 
