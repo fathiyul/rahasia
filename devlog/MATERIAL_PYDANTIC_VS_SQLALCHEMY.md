@@ -492,6 +492,26 @@ For Rahasia:
 
 That keeps the architecture simple.
 
+### Extra note: LLM structured output
+
+If you are handling structured output from an LLM, that usually belongs on the Pydantic side, not the dataclass side.
+
+Why:
+
+- LLM output is external input
+- it may be missing fields
+- it may return the wrong types
+- it often needs schema validation before the app should trust it
+
+So for LLM structured output, `BaseModel` is usually the better fit because it gives you:
+
+- runtime validation
+- parsing into Python objects
+- clearer validation errors
+- schema generation in systems that need a formal output schema
+
+A dataclass can still hold trusted data after validation, but it is usually not the first tool for verifying raw LLM output.
+
 ---
 
 ## 14. Short Decision Guide
