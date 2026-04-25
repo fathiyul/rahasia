@@ -139,3 +139,22 @@ input[readonly] {
   color: #fff;
   text-decoration: none;
 }
+
+.app-header {
+  display: flex;
+  align-items: start;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.auth-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+@media (max-width: 640px) {
+  .app-header {
+    flex-direction: column;
+  }
+}

@@ -67,13 +67,12 @@ export function CreateSharePage() {
   }
 
   return (
-    <main className="page stack">
+    <section className="stack">
       <header className="stack">
-        <p className="eyebrow">Rahasia</p>
         <h1>Create a share</h1>
         <p className="hint">
-          Your text or file is encrypted in the browser before it is sent to
-          the backend.
+          Your text or file is encrypted in the browser before it is sent to the
+          backend.
         </p>
       </header>
 
@@ -84,6 +83,6 @@ export function CreateSharePage() {
       {createdShareId && createdShareKey ? (
         <ShareResult shareId={createdShareId} shareKey={createdShareKey} />
       ) : null}
-    </main>
+    </section>
   )
 }

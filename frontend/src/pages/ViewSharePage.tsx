@@ -108,8 +108,7 @@ export function ViewSharePage() {
   }
 
   return (
-    <main className="page stack">
-      <p className="eyebrow">Rahasia</p>
+    <section className="stack">
       <h1>View share</h1>
 
       <p className="hint">
@@ -219,6 +218,6 @@ export function ViewSharePage() {
           ) : null}
         </>
       ) : null}
-    </main>
+    </section>
   )
 }
